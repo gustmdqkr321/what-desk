@@ -1,19 +1,46 @@
 from pydantic import BaseModel
+from typing import List
 
 
-class User(BaseModel):
+class UserSignIn(BaseModel):
     user_id: str
     password: str
 
 
-class HashedUser(BaseModel):
+class UserInfo(BaseModel):
     user_id: str
-    hashed_password: str
+    name: str | None = None
+    email: str | None = None
+    image: str | None = None
 
 
-class Token(BaseModel):
+class UserForm(UserSignIn, UserInfo): ...
+
+
+class HashedUser(UserInfo):
+    user_id: str
+    hashed_password: str | None = None
+
+
+class UserExternalMap(BaseModel):
+    external_id: str
+    provider: str
+    user_id: str
+
+
+class TokenResult(BaseModel):
+    user: UserInfo
     access_token: str
-    token_type: str
+
+
+class CommentForm(BaseModel):
+    post_id: int
+    content: str
+
+
+class Comment(CommentForm):
+    comment_id: int
+    author_id: str
 
 
 class BasePost(BaseModel):
@@ -34,16 +61,7 @@ class PostPreview(BasePost):
 
 class Post(PostPreview):
     content: str
-
-
-class CommentForm(BaseModel):
-    post_id: int
-    content: str
-
-
-class Comment(CommentForm):
-    comment_id: int
-    author_id: str
+    comments: List[Comment]
 
 
 class Image(BaseModel):

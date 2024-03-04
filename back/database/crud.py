@@ -1,5 +1,5 @@
-from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session, joinedload
 from database.models import *
 from database.schemas import *
 
@@ -10,6 +10,14 @@ async def create_user(db: Session, user: HashedUser):
     db.commit()
     db.refresh(user)
     return user
+
+
+async def create_user_external_map(db: Session, user_external_map: UserExternalMap):
+    user_external_map = UserExternalMapping(**user_external_map.model_dump())
+    db.add(user_external_map)
+    db.commit()
+    db.refresh(user_external_map)
+    return user_external_map
 
 
 async def create_post(db: Session, post: PostForm, user_id: str):
@@ -47,7 +55,12 @@ async def increment_like_count(db: Session, post_id: int):
 
 
 async def increment_view_count(db: Session, post_id: int):
-    post = db.query(Posts).filter(Posts.post_id == post_id).first()
+    post = (
+        db.query(Posts)
+        .filter(Posts.post_id == post_id)
+        .options(joinedload(Posts.comments))
+        .first()
+    )
 
     if post:
         post.view_count += 1
@@ -56,8 +69,25 @@ async def increment_view_count(db: Session, post_id: int):
         return post
 
 
-async def read_user(db: Session, user_id: str):
+async def read_user_by_id(db: Session, user_id: str):
     return db.query(Users).filter(Users.user_id == user_id).first()
+
+
+async def read_user_by_email(db: Session, email: str):
+    return db.query(Users).filter(Users.email == email).first()
+
+
+async def read_user_external_map(db: Session, external_id: str, provider: str):
+    return (
+        db.query(UserExternalMapping)
+        .filter(
+            and_(
+                UserExternalMapping.external_id == external_id,
+                UserExternalMapping.provider == provider,
+            )
+        )
+        .first()
+    )
 
 
 async def read_post(db: Session, post_id: int):
@@ -103,10 +133,14 @@ async def search_comment(db: Session, author_id: str = None, post_id: int = None
 
 
 async def read_like(db: Session, author_id: str, post_id: int):
-    return db.query(Likes).filter(Likes.author_id == author_id, Likes.post_id == post_id).all()
+    return (
+        db.query(Likes)
+        .filter(Likes.author_id == author_id, Likes.post_id == post_id)
+        .all()
+    )
 
 
-async def created_image(db: Session, image: Image):
+async def create_image(db: Session, image: Image):
     image = Images(**image.model_dump())
     db.add(image)
     db.commit()
