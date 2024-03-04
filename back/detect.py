@@ -5,8 +5,8 @@ import csv
 def detect(image_path, result_folder, conf_threshold=0.25):
     from ultralytics import YOLO
     # Load model
-    model = YOLO("yolov8s.pt")
-
+    # model = YOLO("yolov8s.pt")
+    model = YOLO("yolov8x.pt")
     # Predict
     result = model.predict(image_path, save=False, conf=conf_threshold, classes =[24,25,26,39,41,56,58,59,60,62,63,64,66,73,74,])
 
