@@ -8,7 +8,7 @@ def detect(image_path, result_folder, conf_threshold=0.25):
     # model = YOLO("yolov8s.pt")
     model = YOLO("yolov8x.pt")
     # Predict
-    result = model.predict(image_path, save=False, conf=conf_threshold, classes =[24,25,26,39,41,56,58,59,60,62,63,64,66,73,74,])
+    result = model.predict(image_path, save=False, conf=conf_threshold, classes =[41,56,58,59,60,62,63,64,66,73,74,75])
 
     # 이미지 저장 경로
     file_name = os.path.splitext(os.path.basename(image_path))[0]
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     model = YOLO("yolov8s.pt")
 
     # 이미지 경로
-    image_paths = 'image'
+    image_paths = '/Users/park_sh/Desktop/what-desk/back/image'
 
     for file_name in os.listdir(image_paths):
         if file_name.endswith((".jpg", ".jpeg", ".png")):
